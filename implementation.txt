@@ -1,0 +1,63 @@
+\section{Methods}
+\label{section:methods}
+
+We begin by describing and justifying our experimental setup.
+All experiments in this paper take advantage of BEIR~\cite{thakur:2021}, which comprises a large collection of individual retrieval datasets and has emerged as the standard benchmark for evaluating retrieval applications.
+We provide detailed experimental results over 29 different individual datasets,\footnote{Note that CQADupStack is actually comprised of 12 different ``verticals''.} each with different corpora, queries, and task definitions.
+This variety provides a cross section of search tasks and realistically reflects real-world scenarios.
+
+Our evaluations were conducted with the open-source Lucene search library, a choice that deserves some discussion and justification.
+We provide two main reasons:\
+First, Lucene is the most widely deployed search library in the world, mostly via platforms such as Elasticsearch, Solr, and OpenSearch.
+\citet{Devins_etal_WSDM2022} have shown that implementations in Lucene simplify many aspects of IR experiments, but yet can be easily ported over to Elasticsearch---this combination facilitates prototyping while preserving fidelity to real-world scenarios.
+Thus, our results would be of broad interest to many practitioners in the community.
+
+Second, our work with Lucene provides a comparison across dense and sparse techniques that is as fair as possible given currently available software.
+While Lucene provides a production-grade implementation of HNSW indexes, it is one of many existing options currently available on the market.
+Faiss~\cite{faiss} is another popular option, and there is a vibrant ecosystem of vendors providing vector search capabilities (Weaviate, Chroma, Pinecone, Vectara, and many others).
+Vector search has also been integrated into relational databases~\cite{Xian_etal_WSDM2024}, for example, pgvector for Postgres.
+
+However, we selected Lucene because it provides implementations of {\it both} dense and sparse retrieval, making comparisons reasonably fair.
+For example, comparing Faiss HNSW indexes (implemented in C++) with Lucene inverted indexes (implemented in Java) or even Numpy would be conflating too many non-relevant factors (e.g., language choice).
+Within the same project (Lucene), we expect different retrieval techniques to have comparable implementation quality.
+While Vespa does provide dense and sparse vector search capabilities, it remains niche and lacks the wide install base of Lucene, making results of limited interest to the broader community.
+
+\paragraph{Retrieval models.}
+We examined the following retrieval models in this study:
+
+\begin{itemize}[leftmargin=*]
+
+\item BGE~\cite{Xiao:2309.07597:2024} was selected as a representative dense retrieval model; specifically \texttt{\small bge-base-en-v1.5}.
+
+\item SPLADE++ EnsembleDistil (ED)~\cite{splade} was selected as a representative sparse retrieval model.
+
+\item BM25~\cite{robertson2009bm25} provides the baseline.
+For BEIR,~\citet{Kamalloo_etal_SIGIR2024} identified two distinct BM25 variants:\ here we use the approach where all document fields are concatenated prior to indexing.
+
+\end{itemize}
+
+\noindent For the dense retrieval model (BGE), our work examined two types of indexes.
+First, we considered hierarchical navigable small-world network (HNSW) indexes~\cite{HNSW}, which represent best practices today for nearest-neighbor search over dense vectors.
+Most ``vector DB'' vendors today offer variants of such indexes.
+
+Alternatively, we evaluated so-called ``flat'' indexes, where the dense vectors are simply stored sequentially, one after the other.
+``Indexing'' in this case is simply rewriting the embedding vectors in an internal representation.
+Top-$k$ retrieval is implemented as brute-force search:\ the retriever simply scans the vectors, computing (in our case) the dot product between the query and each document vector, retaining only the top $k$ results.
+
+For SPLADE++ ED, we used standard inverted indexes, taking advantage of the widely known ``fake words'' trick, where quantized impact scores replace the term frequency component in the postings, and query evaluation uses a ``sum of term frequencies'' scoring function.
+See~\citet{Mackenzie_etal_TOIS2023} for more details.
+BM25 also used standard inverted indexes.
+
+\paragraph{Implementation details.}
+All experiments were conducted using the Anserini open-source IR toolkit~\cite{Yang_etal_JDIQ2018}, based on Lucene 9.9.1 (released Dec.\ 2023).
+We used bindings for Lucene HNSW indexes recently introduced in~\citet{Ma_etal_CIKM2023}.
+We set the HNSW indexing parameters \texttt{\small M} to 16 and \texttt{\small efC} to 100, both representing typical configurations.
+Lucene's HNSW indexing implementation generates different index segments and then merges them as needed in a hierarchical manner; we used all default settings here.
+On the retrieval end, we set \texttt{\small efSearch} to 1000, another common setting.
+The flat index implementation in Anserini is adapted from Elasticsearch.
+
+All experiments were performed on a circa-2022 Mac Studio with an M1 Ultra processor containing 20 cores (16 performance, 4 efficiency) and 128 GB memory, running macOS Sonoma 14.5 and OpenJDK 21.0.2.
+We enabled the \texttt{\small jdk.incubator.vector} module for more efficient vector operations.
+Both indexing and retrieval experiments used 16 threads.
+In all cases (HNSW, flat, and inverted indexes), we retrieved 1000 hits and evaluated retrieval quality in terms of nDCG@10, per BEIR guidelines.
+Query evaluation performance was measured in terms of queries per second (QPS) using 16 threads.
