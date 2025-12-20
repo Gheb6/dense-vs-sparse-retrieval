@@ -1,0 +1,12 @@
+{
+  "dataset": "scifact",
+  "num_documents": 5183,
+  "num_queries": 300,
+  "num_qrels": 300,
+  "hnsw_M": 16,
+  "hnsw_efC": 100,
+  "hnsw_efSearch": 1000,
+  "threads": "16",
+  "k_retrieve": 1000,
+  "k_eval": 10
+}
