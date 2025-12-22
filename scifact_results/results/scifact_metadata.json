@@ -1,0 +1,36 @@
+{
+  "dataset": "scifact",
+  "num_documents": 5183,
+  "num_queries": 300,
+  "num_qrels": 300,
+  "hnsw_M": 16,
+  "hnsw_efC": 100,
+  "hnsw_efSearch": 1000,
+  "threads": "16",
+  "k_retrieve": 1000,
+  "k_eval": 10,
+  "index_times": {
+    "BM25": 4.330450057983398,
+    "SPLADE++ ED": 13.670496225357056,
+    "BGE-HNSW": 0.5655007362365723,
+    "BGE-Flat": 0.022582292556762695,
+    "BGE-HNSW-int8": 0.48519158363342285,
+    "BGE-Flat-int8": 0.023090124130249023
+  },
+  "total_indexing_time": 18.58902931213379,
+  "int8_quantization": {
+    "method": "simple_linear_quantization",
+    "scale": 127,
+    "range": "[-128, 127]"
+  },
+  "speedup": {
+    "hnsw_indexing": 1.1655204981128144,
+    "flat_indexing": 0.9780065464082522,
+    "hnsw_query": 0.9009230026950513,
+    "flat_query": 1.0852090258898253
+  },
+  "quality_retention": {
+    "hnsw_ndcg": 100.65256276221797,
+    "flat_ndcg": 100.65256276221797
+  }
+}
