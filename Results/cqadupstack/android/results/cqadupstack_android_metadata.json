@@ -1,0 +1,36 @@
+{
+  "dataset": "cqadupstack/android",
+  "num_documents": 22998,
+  "num_queries": 699,
+  "num_qrels": 699,
+  "hnsw_M": 16,
+  "hnsw_efC": 100,
+  "hnsw_efSearch": 1000,
+  "threads": "16",
+  "k_retrieve": 1000,
+  "k_eval": 10,
+  "index_times": {
+    "BM25": 11.21699833869934,
+    "SPLADE++ ED": 50.19784235954285,
+    "BGE-HNSW": 12.544703483581543,
+    "BGE-Flat": 0.10231471061706543,
+    "BGE-HNSW-int8": 10.50524091720581,
+    "BGE-Flat-int8": 0.10272955894470215
+  },
+  "total_indexing_time": 74.0618588924408,
+  "int8_quantization": {
+    "method": "simple_linear_quantization",
+    "scale": 127,
+    "range": "[-128, 127]"
+  },
+  "speedup": {
+    "hnsw_indexing": 1.1941376292508854,
+    "flat_indexing": 0.9959617433200504,
+    "hnsw_query": 0.8293926121725764,
+    "flat_query": 1.123721099464234
+  },
+  "quality_retention": {
+    "hnsw_ndcg": 99.20267290531388,
+    "flat_ndcg": 99.1212359798722
+  }
+}
