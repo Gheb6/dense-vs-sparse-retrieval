@@ -66,7 +66,7 @@ pip install huggingface-hub==0.23.0 transformers==4.36.2 sentence-transformers==
 ```
 ## 🚀 Usage
 
-1.  Open the Jupyter Notebook (`notebook.ipynb`).
+1.  Open the Jupyter Notebook (`Dense_vs_Sparse_Replication_SPLADE_Fix.ipynb`).
 2.  **Select Dataset:** Modify the `dataset_name` variable in Cell 3.
     ```python
     dataset_name = 'nfcorpus' # Options: 'scifact', 'trec-covid', 'fiqa', etc.
