@@ -102,8 +102,8 @@ The notebook generates a `FINAL_OUTPUT_{dataset_name}.zip` containing:
 
 ### 🎓 Project Information
 
-* **Student:** [Gabriele Righi]
-* **University:** [University of Pisa]
+* **Student:** Gabriele Righi
+* **University:** University of Pisa
 * **Course:** Information Retrieval 
 * **Academic Year:** 2025/2026
 * **Objective:** Reproduction of state-of-the-art retrieval models as part of the course evaluation
