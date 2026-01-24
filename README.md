@@ -5,7 +5,7 @@
 [![FAISS](https://img.shields.io/badge/FAISS-Vector_Search-green)](https://github.com/facebookresearch/faiss)
 [![Paper](https://img.shields.io/badge/Paper-arXiv:2409.06464-red)](https://arxiv.org/abs/2409.06464)
 
-This repository contains a complete replication of the experiments described in the paper **"Dense vs Sparse Retrieval: A Comprehensive Analysis on BEIR"** (arXiv:2409.06464).
+This repository contains a complete replication of the experiments described in the paper **""Operational Advice for Dense and Sparse Retrievers: HNSW, Flat, or Inverted Indexes?"** (arXiv:2409.06464).
 
 The project implements and compares three retrieval paradigms across BEIR datasets:
 1.  **Sparse (Baseline):** BM25 (via Pyserini/Lucene)
