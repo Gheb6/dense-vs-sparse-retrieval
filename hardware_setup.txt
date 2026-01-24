@@ -1,0 +1,12 @@
+Hardware Setup and Reproducibility Statement
+
+1. Experimental Environment
+All experiments in this replication were conducted using the Kaggle computational environment, utilizing an NVIDIA Tesla T4 GPU (16GB VRAM), an Intel Xeon CPU (2 vCPUs), and 13GB of system RAM.
+
+2. Comparison with Original Study
+The baseline results reported in the reference paper (Lin et al., 2024) were obtained on a Mac Studio equipped with an Apple M1 Ultra processor (20 CPU cores) and 128GB of unified memory.
+
+3. Analysis of Deviations
+- Retrieval Quality (nDCG@10, Recall@10): These metrics are deterministic and hardware-agnostic. The results obtained in this replication match the theoretical expectations and confirm the validity of the implementation, particularly the custom matrix-based approach for SPLADE.
+- Efficiency (QPS): Performance metrics reflect the architectural differences between the two setups. The M1 Ultra (20 cores, 128GB RAM) holds a significant advantage in CPU-bound tasks such as BM25/Lucene indexing and inverted index traversal. 
+Conversely, the NVIDIA T4 GPU provides dedicated acceleration for neural inference and dense vector operations, although the overall throughput is constrained by the limited CPU cores available in the Kaggle environment compared to the M1 Ultra.
