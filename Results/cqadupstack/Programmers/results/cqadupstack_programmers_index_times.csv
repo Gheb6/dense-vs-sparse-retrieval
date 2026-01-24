@@ -1,5 +1,0 @@
-Method,Type,Index Time (s)
-BM25,Sparse (Baseline),15.383845806121826
-SPLADE++ ED,Sparse (Learned),88.74368333816528
-BGE-HNSW,Dense (HNSW),17.640166759490967
-BGE-Flat,Dense (Flat),0.3426814079284668
