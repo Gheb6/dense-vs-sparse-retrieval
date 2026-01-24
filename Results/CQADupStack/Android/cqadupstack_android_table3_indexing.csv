@@ -1,0 +1,5 @@
+Method,Quantization,Index Time (s)
+BGE-HNSW,FP32,0.0
+BGE-HNSW,int8,9.681349039077759
+BGE-Flat,FP32,0.0
+BGE-Flat,int8,0.10601115226745605
