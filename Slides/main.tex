@@ -9,8 +9,8 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}
-\usepackage{booktabs} % For professional tables
-\usepackage{tikz}     % For the pipeline diagram
+\usepackage{booktabs} % Per tabelle professionali
+\usepackage{tikz}     % Per il diagramma della pipeline
 \usetikzlibrary{shapes.geometric, arrows, positioning}
 \usepackage{hyperref}
 
@@ -135,7 +135,7 @@
 \end{frame}
 
 % =============================================================
-% SLIDE 4b: The SPLADE Anomaly (The Problem)
+% SLIDE 5: The SPLADE Anomaly (The Problem)
 % =============================================================
 \begin{frame}{Challenge II: The SPLADE Underperformance Mystery}
     \textbf{The Anomaly}
@@ -165,7 +165,7 @@
 \end{frame}
 
 % =============================================================
-% SLIDE 4c: The Solution (Matrix Engine) - CONDENSED
+% SLIDE 6: The Solution (Matrix Engine) - CONDENSED
 % =============================================================
 \begin{frame}{The Solution: Custom Matrix Engine}
     \textbf{The Fix}: Bypassed Pyserini. Built a \textbf{pure Python sparse engine} using \texttt{SciPy}.
@@ -200,7 +200,7 @@
 
 
 % =============================================================
-% SLIDE 5: Implementation Pipeline
+% SLIDE 7: Implementation Pipeline
 % =============================================================
 \section{Implementation}
 
@@ -237,7 +237,7 @@
 \end{frame}
 
 % =============================================================
-% SLIDE 7: Results - Quality (INT8 vs FP32)
+% SLIDE 8: Results - Quality (INT8 vs FP32)
 % =============================================================
 \section{Results}
 
@@ -267,14 +267,14 @@
 \end{frame}
 
 % =============================================================
-% SLIDE 8: Results - Efficiency (HNSW vs Flat)
+% SLIDE 9: Results - Efficiency (HNSW vs Flat)
 % =============================================================
 \begin{frame}{Results - Efficiency (HNSW vs Flat)}
     \begin{columns}
         \column{0.5\textwidth}
         % PLACEHOLDER FOR YOUR PLOT
-        % Replace 'example-image' with the path to your .pdf or .png file
-        % E.g.: \includegraphics[width=\textwidth]{results/gaming_speed_vs_quality.pdf}
+        % Sostituisci 'example-image' con il percorso del tuo file .pdf o .png
+        % Es: \includegraphics[width=\textwidth]{results/gaming_speed_vs_quality.pdf}
         \begin{block}{Speed vs Quality}
             \centering
             [Insert your scatter plot here]
@@ -296,31 +296,6 @@
         \vspace{1em}
         \textbf{Takeaway}: HNSW is not a ``silver bullet.'' For specific vertical datasets, brute-force is faster.
     \end{columns}
-\end{frame}
-
-% =============================================================
-% SLIDE 9: Code & Reproducibility
-% =============================================================
-\section{Reproducibility}
-
-\begin{frame}{Code \& Reproducibility}
-    The repository is organized to ensure full reproducibility:
-    
-    \vspace{1em}
-    
-    \begin{description}
-        \item[\texttt{smart\_loading}] Efficient download logic (HuggingFace API).
-        \item[\texttt{indexing}] Automated builders for Faiss (Dense) and Lucene (Sparse).
-        \item[\texttt{evaluation}] Standardized BEIR metrics implementation.
-    \end{description}
-    
-    \vspace{1em}
-    
-    \textbf{Robustness Features}
-    \begin{itemize}
-        \item Automatic detection of dataset schema variations (e.g., \texttt{query-id} vs \texttt{query\_id}).
-        \item Universal download script for Colab and Kaggle environments.
-    \end{itemize}
 \end{frame}
 
 % =============================================================
@@ -349,22 +324,7 @@
 \end{frame}
 
 % =============================================================
-% SLIDE 11: Q&A
-% =============================================================
-\begin{frame}
-    \centering
-    \Huge \textbf{Thank you!}
-    
-    \vspace{1em}
-    \Large Questions?
-    
-    \vspace{2em}
-    \normalsize
-    \repoLink
-\end{frame}
-
-% =============================================================
-% SLIDE 12: References
+% SLIDE 11: References
 % =============================================================
 \begin{frame}{References}
     \begin{thebibliography}{9}
@@ -380,6 +340,21 @@
         GitHub, 2026.
         \newblock \url{https://github.com/Gheb6/dense-vs-sparse-retrieval}
     \end{thebibliography}
+\end{frame}
+
+% =============================================================
+% SLIDE 12: Q&A
+% =============================================================
+\begin{frame}
+    \centering
+    \Huge \textbf{Thank you!}
+    
+    \vspace{1em}
+    \Large Questions?
+    
+    \vspace{2em}
+    \normalsize
+    \repoLink
 \end{frame}
 
 \end{document}
