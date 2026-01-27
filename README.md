@@ -107,3 +107,19 @@ The notebook generates a `FINAL_OUTPUT_{dataset_name}.zip` containing:
 * **Course:** Information Retrieval 
 * **Academic Year:** 2025/2026
 * **Objective:** Reproduction of state-of-the-art retrieval models as part of the course evaluation
+
+---
+
+## 📝 How to Cite
+
+If you use this code in your research, please cite this repository:
+
+```bibtex
+@misc{righi2025densesparse,
+    title={Dense vs Sparse Retrieval: BEIR Benchmark Replication},
+    author={Gabriele Righi},
+    year={2026},
+    howpublished={\url{https://github.com/Gheb6/dense-vs-sparse-retrieval}},
+    institute={University of Pisa}
+}
+```
