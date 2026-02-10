@@ -1,0 +1,5 @@
+Index,Time (s)
+HNSW FP32,1132
+HNSW INT8,1481
+Flat INT8,11
+Flat FP32,< 5

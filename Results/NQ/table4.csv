@@ -1,0 +1,6 @@
+Method,Memory (GB),QPS,Latency (ms)
+HNSW INT8,2.4,9034.2,0.11
+HNSW FP32,9.59,8712.7,0.11
+BM25 (Sparse),0.5,49.354,20.26
+Flat FP32 (Exact),7.67,14.9,67.11
+Flat INT8,1.92,5.0,200.0
