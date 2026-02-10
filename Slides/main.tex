@@ -9,11 +9,12 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}
-\usepackage{booktabs} % Per tabelle professionali
-\usepackage{tikz}     % Per il diagramma della pipeline
+\usepackage{booktabs} % For professional tables
+\usepackage{tikz}     % For the pipeline diagram
+\usetikzlibrary{calc, positioning, arrows}
 \usetikzlibrary{shapes.geometric, arrows, positioning}
 \usepackage{hyperref}
-
+\usepackage{colortbl}
 % --- CUSTOM BEAMER STYLE CONFIGURATION ---
 % These must be defined BEFORE loading custom_beamer.sty
 
@@ -32,6 +33,11 @@
 % --- LOAD YOUR UNIVERSITY STYLE ---
 \usepackage{custom_beamer}
 
+% --- BIBLIOGRAPHY CONFIGURATION ---
+\usepackage[style=authoryear, backend=biber]{biblatex} % Author-Year style
+\addbibresource{references.bib} % Loads the file created above
+%\renewcommand*{\bibfont}{\footnotesize} % Makes the font smaller to fit the slide
+
 
 % % %
 \if\upperbar\false
@@ -40,13 +46,13 @@
 % % %
 
 % --- METADATA ---
-\title[Dense vs. Sparse Retrieval]{Reproducing ``Experimental Analysis of Dense vs. Sparse Retrieval''}
+\title[Dense vs. Sparse Retrieval]{Reproducing ``Experimental Analysis of Dense vs.~Sparse Retrieval''}
 % \subtitle{An Experimental Analysis of Dense vs. Sparse Retrieval on the BEIR Benchmark}
 \author{Gabriele Righi}
 \institute{University of Pisa}
 \date{\today}
 
-% Link alla repository nel footer o nel titolo
+% Repository link in the footer or title
 \newcommand{\repoLink}{\url{https://github.com/Gheb6/dense-vs-sparse-retrieval}}
 
 \begin{document}
@@ -61,31 +67,24 @@
 % =============================================================
 \section{Introduction}
 
-\begin{frame}{Introduction \& Motivation}
-    \textbf{Context: Modern IR offers two main paths}
+\begin{frame}{Introduction \& Research Goals}
+    \textbf{Context: The ``Operational'' Gap}
     \begin{itemize}
-        \item \textbf{Sparse Retrieval:} BM25, SPLADE (Keyword-based, efficient).
-        \item \textbf{Dense Retrieval:} Embeddings + ANN (Semantic-based, resource-heavy).
+        \item Modern IR has shifted from Sparse (BM25) to Dense (Embeddings).
+        \item Dense retrieval is effective but resource-intensive.
     \end{itemize}
     
-    \vspace{1em}
+    \vspace{0.5em}
     
-    \textbf{The Problem}
-    \begin{itemize}
-        \item Dense retrieval is expensive (RAM/GPU). Is it always necessary?
-    \end{itemize}
-    
-    \vspace{1em}
-    
-    \begin{alertblock}{Project Goal}
-        Replicate the findings of \textit{Lin et al. (2024)} to answer:
+    \begin{alertblock}{The 3 Research Questions (Lin et al., 2024)}
+        This project reproduces the analysis to answer three key operational questions:
         \begin{enumerate}
-            \item Can \textbf{INT8 quantization} save memory without losing quality?
-            \item Is \textbf{HNSW} (graph index) always better than \textbf{Flat} (brute-force)?
+            \item \textbf{RQ1:} Is the complexity of HNSW always necessary, or is \textbf{Flat index} sufficient for typical workloads?
+            \item \textbf{RQ2:} Can we use \textbf{INT8 Quantization} to save RAM without hurting retrieval quality (nDCG)?
+            \item \textbf{RQ3:} How does \textbf{Sparse Retrieval} (BM25/SPLADE) compare to Dense methods in a modern GPU environment?
         \end{enumerate}
     \end{alertblock}
 \end{frame}
-
 % =============================================================
 % SLIDE 3: Experimental Setup
 % =============================================================
@@ -126,11 +125,11 @@
     \end{itemize}
     
     \vspace{1em}
-    \textbf{The Engineering Solution: Hybrid Pipeline}
+    \textbf{The Engineering Pivot: Hybrid Pipeline}
     \begin{itemize}
-        \item \textbf{Sparse}: Kept Pyserini for BM25 (best-in-class implementation).
-        \item \textbf{Dense}: Switched to \textbf{Faiss} (Facebook AI Search).
-        \item \textit{Trade-off}: Faiss is C++/Python based (GPU friendly), diverging slightly from the paper's Lucene setup but enabling GPU acceleration.
+        \item \textbf{Sparse Path:} Retained Pyserini for BM25 (Industry Standard).
+        \item \textbf{Dense Path:} Migrated to \textbf{Faiss} (Facebook AI Similarity Search).
+        \item \textit{Why?} Faiss offers native \textbf{GPU support} and flexible python bindings for custom embeddings, enabling a fairer comparison for RQ1 (Flat vs HNSW).
     \end{itemize}
 \end{frame}
 
@@ -183,7 +182,7 @@
         \column{0.4\textwidth}
         \begin{block}{Core Logic}
             \centering
-            \[ S = M_{docs} \times q^T \]
+            \[ S = \mathbf{D} \times \mathbf{q}^T \]
         \end{block}
     \end{columns}
 
@@ -200,102 +199,178 @@
 
 
 % =============================================================
-% SLIDE 7: Implementation Pipeline
+% SLIDE 7: Implementation Pipeline (FIXED GEOMETRY)
 % =============================================================
 \section{Implementation}
 
-\begin{frame}{Implementation Pipeline}
-    % TikZ Diagram for the pipeline
+\begin{frame}{Implementation Pipeline: The ``Dual-Engine'' Architecture}
     \begin{center}
-    \resizebox{\textwidth}{!}{
-        \begin{tikzpicture}[node distance=1.5cm, auto]
-            \tikzstyle{block} = [rectangle, draw, fill=blue!10, text width=5em, text centered, rounded corners, minimum height=3em]
-            \tikzstyle{line} = [draw, -latex', thick]
+    \resizebox{1.0\textwidth}{!}{
+        \begin{tikzpicture}[
+            node distance=1.0cm, 
+            auto,
+            base/.style = {rectangle, draw=black, thick, text centered, rounded corners, minimum height=3em, font=\small},
+            data/.style = {base, fill=gray!20, text width=5.5em},
+            dense/.style = {base, fill=blue!15, text width=6.5em},
+            sparse/.style = {base, fill=green!15, text width=6.5em},
+            custom/.style = {base, draw=red!80, fill=red!10, text width=7em, line width=0.5mm}, 
+            eval/.style = {base, fill=yellow!20, text width=6em}
+        ]
+
+            % --- 1. Nodes ---
+            \node [data] (dataset) {\textbf{BEIR Dataset} \\ (Queries)};
+            \node [data, right=0.8cm of dataset] (loader) {Smart Loader \\ (HuggingFace)};
+            \node [coordinate, right=0.5cm of loader] (split) {};
+
+            \node [dense, above right=0.5cm and 1cm of split] (bge) {BGE Encoder};
+            \node [dense, right=1cm of bge] (faiss) {\textbf{Faiss (GPU)} \\ Flat / HNSW};
+
+            \node [sparse, below right=0.5cm and 1cm of split] (splade) {SPLADE Model};
+            \node [custom, right=1cm of splade] (matrix) {\textbf{Custom Matrix Engine} \\ (SciPy)};
+
+            % Position Evaluation centered
+            \node [eval] (eval) at ($(faiss.east)!0.5!(matrix.east) + (2.5, 0)$) {\textbf{Evaluation} \\ (nDCG, QPS)};
+
+            % --- 2. Connections with FIXED LABELS ---
             
-            \node [block] (dl) {Download (Smart Load)};
-            \node [block, right=of dl] (enc) {Encode (SPLADE/BGE)};
-            \node [block, right=of enc] (idx) {Index (Faiss/Lucene)};
-            \node [block, right=of idx] (search) {Search (Dense/Sparse)};
-            \node [block, right=of search] (eval) {Eval (BEIR)};
+            % Input
+            \draw [->, thick] (dataset) -- (loader);
+            \draw [-, thick] (loader) -- (split);
+
+            % Dense Path (Blue)
+            % xshift=-0.5cm moves the text to the left to avoid touching the BGE box
+            \draw [->, thick, blue] (split) |- node[pos=0.8, above, xshift=-0.8cm, font=\footnotesize] {Dense Path} (bge);
+            \draw [->, thick, blue] (bge) -- (faiss);
+            \draw [->, thick, blue] (faiss.east) -| (eval.north); 
+
+            % Sparse Path (Green)
+            % xshift=-0.5cm moves the text to the left to avoid touching the SPLADE box
+            \draw [->, thick, green!60!black] (split) |- node[pos=0.8, below, xshift=-0.8cm, font=\footnotesize] {Sparse Path} (splade);
             
-            \path [line] (dl) -- (enc);
-            \path [line] (enc) -- (idx);
-            \path [line] (idx) -- (search);
-            \path [line] (search) -- (eval);
+            % My Contribution
+            % yshift=-3pt lowers the text to detach it from the line (updated to 20pt in code)
+            \draw [->, thick, green!60!black] (splade) -- node[midway, below=20pt, red, font=\footnotesize] {My Contribution} (matrix);
+            
+            \draw [->, thick, green!60!black] (matrix.east) -| (eval.south);
+
         \end{tikzpicture}
     }
     \end{center}
 
-    \vspace{1em}
-    \textbf{Key Contributions}
+    \vspace{0.5em}
+    \textbf{Architectural Highlights:}
     \begin{itemize}
-        \item \textbf{HuggingFace}: Efficient data loading (custom \texttt{Smart Loading} logic).
-        \item \textbf{Pyserini (Lucene)}: Integration for BM25 indexing.
-        \item \textbf{Faiss (GPU)}: Integration for Dense Retrieval (HNSW/Flat).
-        \item \textbf{PyTorch}: Custom loop for SPLADE encoding.
+        \item \textbf{Parallel Processing:} Simultaneous execution of Dense and Sparse pipelines.
+        \item \textbf{\textcolor{red}{Custom Matrix Engine}}: Replaced Pyserini's ``Black Box'' indexer with a transparent vector-matrix multiplication engine for SPLADE.
+        \item \textbf{GPU Acceleration}: Integrated Faiss to unlock GPU speeds for Dense Retrieval.
     \end{itemize}
 \end{frame}
 
-% =============================================================
-% SLIDE 8: Results - Quality (INT8 vs FP32)
-% =============================================================
-\section{Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results: Quality}
 
-\begin{frame}{Results - Quality (INT8 vs FP32)}
-    % Example Table based on your Gaming data
+\begin{frame}{Operational Advice: RQ1 \& RQ2}
+
+    % Titolo leggermente più piccolo per guadagnare spazio
+    \small \textbf{Summary: When to switch Index? When to Quantize?}
+    \vspace{0.1em}
+
     \begin{table}
         \centering
-        \caption{Performance on \texttt{cqadupstack/gaming} (46k docs)}
-        \begin{tabular}{lcccc}
+        \scriptsize % Carattere piccolo ma leggibile
+        \setlength{\tabcolsep}{3pt} % Riduce spazio tra colonne
+        \renewcommand{\arraystretch}{1.1} % Riduce altezza righe
+        \begin{tabular}{l l c c c l}
             \toprule
-            \textbf{Method} & \textbf{Quantization} & \textbf{nDCG@10} & \textbf{Recall@10} & \textbf{QPS} \\
+            \textbf{Dataset} & \textbf{Method} & \textbf{Build} & \textbf{RAM} & \textbf{QPS} & \textbf{Verdict / Trade-off} \\
             \midrule
-            BGE-HNSW & FP32 & 0.587 & 0.726 & $\sim$467 \\
-            BGE-HNSW & \textbf{INT8} & 0.584 & 0.723 & $\sim$519 \\
-            \midrule
-            BGE-Flat & FP32 & 0.587 & 0.726 & $\sim$1230 \\
-            BGE-Flat & \textbf{INT8} & \textbf{0.584} & \textbf{0.724} & \textbf{$\sim$1212} \\
+            
+            % SCIFACT
+            \textbf{SciFact} 
+            & Flat (FP32) & \textbf{$<$0.1s} & .01 GB & \textbf{4,205} & \textcolor{green!60!black}{\textbf{Best Choice}} \\
+            \textit{(5k)}
+            & Flat (INT8) & $<$0.1s & .01 GB & 2,209 & \textcolor{red!80!black}{\textit{Slower (CPU limit)}} \\
+            \cmidrule(l){2-6}
+            
+            % QUORA
+            \textbf{Quora} 
+            & Flat (FP32) & \textbf{1s} & .38 GB & 120 & \textit{Too Slow} \\
+            \textit{(523k)}
+            & HNSW (FP32) & 234s & .45 GB & \textbf{361} & \textcolor{blue}{\textbf{Worth Build Cost}} \\
+            \cmidrule(l){2-6}
+            
+            % NQ
+            \textbf{NQ} 
+            & HNSW (FP32) & 25m & 2.4 GB & 9,034 & \textit{High RAM} \\
+            \textit{(2.6M)}
+            & HNSW (\textbf{INT8}) & 25m & \textbf{0.6 GB} & \textbf{9,100} & \textcolor{blue}{\textbf{-75\% RAM (Safe)}} \\
+            
             \bottomrule
         \end{tabular}
     \end{table}
 
-    \textbf{Findings:}
-    \begin{itemize}
-        \item nDCG drop is negligible (e.g., from 0.587 to 0.584).
-        \item \textbf{Conclusion:} Quantization is ``operationally safe.'' It saves 75\% of memory with $<$0.5\% quality loss.
-    \end{itemize}
+    \vspace{-0.5em}
+
+    % Un unico blocco per risparmiare spazio verticale
+    \begin{block}
+        \scriptsize % Testo piccolo nel blocco
+        \begin{itemize}
+            \setlength\itemsep{0.2em} % Riduce spazio tra i punti
+            \item \textbf{RQ1 (Scale):} Use \textbf{Flat} for small data ($<$100k) due to zero build time. Use \textbf{HNSW} for large data ($>$200k) where Flat search becomes too slow.
+            \item \textbf{RQ2 (Quantization):} 
+            \begin{itemize}
+                \item \textbf{HNSW:} Always use INT8. It saves 75\% RAM with $<1\%$ quality loss.
+            \end{itemize}
+        \end{itemize}
+    \end{block}
+
 \end{frame}
 
 % =============================================================
-% SLIDE 9: Results - Efficiency (HNSW vs Flat)
+% SLIDE 9: Quality Analysis (FINAL WITH SETUP COST)
 % =============================================================
-\begin{frame}{Results - Efficiency (HNSW vs Flat)}
-    \begin{columns}
-        \column{0.5\textwidth}
-        % PLACEHOLDER FOR YOUR PLOT
-        % Sostituisci 'example-image' con il percorso del tuo file .pdf o .png
-        % Es: \includegraphics[width=\textwidth]{results/gaming_speed_vs_quality.pdf}
-        \begin{block}{Speed vs Quality}
-            \centering
-            [Insert your scatter plot here]
-        \end{block}
 
-        \column{0.5\textwidth}
-        \textbf{Surprising Result}
+
+\begin{frame}{Quality Analysis: Sparse vs. Learned Sparse vs. Dense}
+    
+    \textbf{Q: Does SPLADE bridge the gap? Is Dense still superior?}
+
+    \vspace{-0.5em}
+
+    \begin{table}
+        \centering
+        \footnotesize 
+        \setlength{\tabcolsep}{5pt}
+        \begin{tabular}{l c c c c}
+            \toprule
+            \textbf{Dataset} & \textbf{BM25} & \textbf{SPLADE} & \textbf{Dense} & \textbf{Winner} \\
+            \midrule
+            \textbf{SciFact} & 0.679 & 0.717 & \textbf{0.738} & \textcolor{blue}{\textbf{Dense}} \\
+            \textit{(Small)} & & & \textit{(Flat FP32)} & \\
+            \midrule
+            \textbf{Quora} & 0.789 & 0.842 & \textbf{0.889} & \textcolor{blue}{\textbf{Dense}} \\
+            \textit{(Medium)} & & & \textit{(Flat FP32)} & \\
+            \midrule
+            \textbf{NQ} & 0.235 & \textbf{0.577}* & \textbf{0.541} & \textcolor{blue}{\textbf{Dense}} \\
+            \textit{(Large)} & & \textit{(Subset 100k)} & \textit{(Flat FP32)} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \vspace{-0.5em}
+    
+    \begin{block}{}
+        \footnotesize
         \begin{itemize}
-            \item On smaller datasets ($<$50k docs), \textbf{Flat Index outperformed HNSW} in QPS.
+            \setlength\itemsep{0.2em}
+            \item \textbf{Small/Medium Data:} SPLADE improves over BM25 significantly (+15-20\%).
+            \item \textbf{NQ Result:} Dense is the winner, but required \textbf{$\sim$4h GPU encoding} (vs BM25 minutes).
+            \item \textbf{*Note on SPLADE:} Due to computational constraints, SPLADE was evaluated on a \textbf{100k subset}. 
+            \item \textbf{Conclusion:} Dense Retrieval provides the best quality, justifying the high setup cost.
         \end{itemize}
-        
-        \vspace{1em}
-        \textbf{Reasoning}
-        \begin{itemize}
-            \item HNSW suffers from random memory access patterns.
-            \item Flat Index on GPU exploits massive parallelization.
-        \end{itemize}
-        
-        \vspace{1em}
-        \textbf{Takeaway}: HNSW is not a ``silver bullet.'' For specific vertical datasets, brute-force is faster.
-    \end{columns}
+    \end{block}
 \end{frame}
 
 % =============================================================
@@ -303,43 +378,36 @@
 % =============================================================
 \section{Conclusions}
 
-\begin{frame}{Conclusions}
-    \textbf{Replication Successful:} Results align with the original paper's advice.
+\begin{frame}{Conclusions \& Operational Advice}
+    \textbf{Answering the Research Questions:}
     
-    \vspace{1em}
+    \vspace{0.5em}
     
-    \begin{block}{Operational Advice}
-        \begin{enumerate}
-            \item Use \textbf{INT8} by default for production (massive RAM savings, negligible quality loss).
-            \item Use \textbf{Flat Index} for datasets $<$100k docs if a GPU is available (faster than HNSW).
-        \end{enumerate}
-    \end{block}
-    
-    \vspace{1em}
-    \textbf{Future Work}
     \begin{itemize}
-        \item Extend analysis to Binary Quantization (1-bit).
-        \item Test on larger corpora (e.g., MS MARCO) to see the HNSW crossover point.
+        \item[\textbf{RQ1}] \textbf{HNSW vs Flat:} 
+        \textit{Verdict:} HNSW is \textbf{not} always necessary. \textbf{Flat Index} is faster for datasets $<100$k docs and simpler to maintain.
+        
+        \item[\textbf{RQ2}] \textbf{Quantization Safety:} 
+        \textit{Verdict:} \textbf{Yes.} INT8 reduces RAM by 75\% with negligible quality loss ($<1\%$ nDCG drop). It should be the default.
+        
+        \item[\textbf{RQ3}] \textbf{Sparse vs Dense:} 
+        \textit{Verdict:} Dense methods (BGE) generally outperform Sparse (BM25) in quality, but custom Sparse implementations (Matrix Engine) can be extremely fast on GPU.
     \end{itemize}
+    
+    \vspace{1em}
+    
+    \begin{block}{Final Recommendation}
+        For most production scenarios under 1M docs: \textbf{Use Dense Retrieval with Flat Index + INT8 Quantization.}
+    \end{block}
 \end{frame}
+
 
 % =============================================================
 % SLIDE 11: References
 % =============================================================
-\begin{frame}{References}
-    \begin{thebibliography}{9}
-        \bibitem{lin2024}
-        S. Lin, S. Yang, and J. Lin,
-        \textit{``Operational Advice for Dense and Sparse Retrievers: HNSW, Flat, or Inverted Indexes?''},
-        arXiv:2409.06464, 2024.
-        \newblock \url{https://arxiv.org/abs/2409.06464}
-        
-        \bibitem{repo}
-        G. Righi,
-        \textit{``Dense vs Sparse Retrieval - Replication Repository''},
-        GitHub, 2026.
-        \newblock \url{https://github.com/Gheb6/dense-vs-sparse-retrieval}
-    \end{thebibliography}
+\begin{frame}[allowframebreaks]{References}
+    \nocite{*} % Prints ALL references from the .bib file
+    \printbibliography
 \end{frame}
 
 % =============================================================
@@ -352,10 +420,9 @@
     \vspace{1em}
     \Large Questions?
     
-    \vspace{2em}
-    \normalsize
-    \repoLink
+    % \vspace{2em}
+    % \normalsize
+    % \repoLink
 \end{frame}
 
 \end{document}
-
