@@ -266,46 +266,43 @@
     \end{itemize}
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Results: Quality}
-
+% =============================================================
+% SLIDE 8
+% =============================================================
 \begin{frame}{Operational Advice: RQ1 \& RQ2}
 
-    % Titolo leggermente più piccolo per guadagnare spazio
     \small \textbf{Summary: When to switch Index? When to Quantize?}
     \vspace{0.1em}
 
     \begin{table}
         \centering
-        \scriptsize % Carattere piccolo ma leggibile
-        \setlength{\tabcolsep}{3pt} % Riduce spazio tra colonne
-        \renewcommand{\arraystretch}{1.1} % Riduce altezza righe
-        \begin{tabular}{l l c c c l}
+        \scriptsize 
+        \setlength{\tabcolsep}{2pt} % 
+        \renewcommand{\arraystretch}{1.15} 
+        \begin{tabular}{l l c c c c l} 
             \toprule
-            \textbf{Dataset} & \textbf{Method} & \textbf{Build} & \textbf{RAM} & \textbf{QPS} & \textbf{Verdict / Trade-off} \\
+            \textbf{Dataset} & \textbf{Method} & \textbf{Build} & \textbf{RAM} & \textbf{QPS} & \textbf{nDCG} & \textbf{Verdict / Trade-off} \\
             \midrule
             
             % SCIFACT
             \textbf{SciFact} 
-            & Flat (FP32) & \textbf{$<$0.1s} & .01 GB & \textbf{4,205} & \textcolor{green!60!black}{\textbf{Best Choice}} \\
+            & Flat (FP32) & \textbf{$<$0.1s} & .01 GB & \textbf{4,205} & \textbf{0.738} & \textcolor{green!60!black}{\textbf{Best Choice}} \\
             \textit{(5k)}
-            & Flat (INT8) & $<$0.1s & .01 GB & 2,209 & \textcolor{red!80!black}{\textit{Slower (CPU limit)}} \\
-            \cmidrule(l){2-6}
+            & Flat (INT8) & $<$0.1s & .01 GB & 2,209 & 0.736 & \textcolor{red!80!black}{\textit{Slower (CPU limit)}} \\
+            \cmidrule(l){2-7}
             
             % QUORA
             \textbf{Quora} 
-            & Flat (FP32) & \textbf{1s} & .38 GB & 120 & \textit{Too Slow} \\
+            & Flat (FP32) & \textbf{1s} & .38 GB & 120 & 0.889 & \textit{Too Slow} \\
             \textit{(523k)}
-            & HNSW (FP32) & 234s & .45 GB & \textbf{361} & \textcolor{blue}{\textbf{Worth Build Cost}} \\
-            \cmidrule(l){2-6}
+            & HNSW (FP32) & 4m & .45 GB & \textbf{361} & 0.889 & \textcolor{blue}{\textbf{Worth the wait}} \\
+            \cmidrule(l){2-7}
             
             % NQ
             \textbf{NQ} 
-            & HNSW (FP32) & 25m & 2.4 GB & 9,034 & \textit{High RAM} \\
+            & HNSW (FP32) & 19m & 2.4 GB & 9,034 & 0.464 & \textit{High RAM} \\
             \textit{(2.6M)}
-            & HNSW (\textbf{INT8}) & 25m & \textbf{0.6 GB} & \textbf{9,100} & \textcolor{blue}{\textbf{-75\% RAM (Safe)}} \\
+            & HNSW (\textbf{INT8}) & 25m & \textbf{0.6 GB} & \textbf{9,100} & 0.468 & \textcolor{blue}{\textbf{-75\% RAM (Safe)}} \\
             
             \bottomrule
         \end{tabular}
@@ -313,16 +310,12 @@
 
     \vspace{-0.5em}
 
-    % Un unico blocco per risparmiare spazio verticale
-    \begin{block}
-        \scriptsize % Testo piccolo nel blocco
+    \begin{block}{Final Recommendations}
+        \scriptsize 
         \begin{itemize}
-            \setlength\itemsep{0.2em} % Riduce spazio tra i punti
-            \item \textbf{RQ1 (Scale):} Use \textbf{Flat} for small data ($<$100k) due to zero build time. Use \textbf{HNSW} for large data ($>$200k) where Flat search becomes too slow.
-            \item \textbf{RQ2 (Quantization):} 
-            \begin{itemize}
-                \item \textbf{HNSW:} Always use INT8. It saves 75\% RAM with $<1\%$ quality loss.
-            \end{itemize}
+            \setlength\itemsep{0.2em}
+            \item \textbf{RQ1 (Scale):} Use \textbf{Flat} for small data (<100k). Use \textbf{HNSW} for large data (>200k) as QPS scales better, with negligible nDCG drop (-0.004).
+            \item \textbf{RQ2 (Quantization):} Always use \textbf{INT8} for HNSW. It saves 75\% RAM while maintaining identical nDCG quality (0.541 vs 0.540).
         \end{itemize}
     \end{block}
 
@@ -354,7 +347,7 @@
             \textit{(Medium)} & & & \textit{(Flat FP32)} & \\
             \midrule
             \textbf{NQ} & 0.235 & \textbf{0.577}* & \textbf{0.541} & \textcolor{blue}{\textbf{Dense}} \\
-            \textit{(Large)} & & \textit{(Subset 100k)} & \textit{(Flat FP32)} \\
+            \textit{(Large)} & & & \textit{(Flat FP32)} \\
             \bottomrule
         \end{tabular}
     \end{table}
