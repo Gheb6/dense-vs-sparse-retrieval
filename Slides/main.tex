@@ -92,7 +92,7 @@
 
 \begin{frame}{Experimental Setup}
     \begin{itemize}
-        \item \textbf{Benchmark}: BEIR (Heterogeneous Evaluation).
+        \item \textbf{Benchmark}: BEIR \parencite{beir} (Heterogeneous Evaluation).
         \item \textbf{Datasets Analyzed}: \texttt{scifact}, \texttt{nfcorpus}, \texttt{cqadupstack} (Android, Gaming, GIS).
         \item \textbf{Hardware}: NVIDIA T4 GPU (16GB VRAM).
         \begin{itemize}
@@ -115,22 +115,22 @@
 % =============================================================
 
 \begin{frame}{Challenge I: The Missing Link in Pyserini}
-    \textbf{Original Plan}: Use \texttt{Pyserini} (Lucene wrapper) for \textit{both} Sparse (BM25) and Dense (HNSW) indexing, matching the paper exactly.
-    
-    \vspace{1em}
-    \textbf{The Obstacle}:
-    \begin{itemize}
-        \item Pyserini supports HNSW via Java, but the **Python API for adding vectors to HNSW indexes is limited/missing**.
-        \item Impossible to feed custom BGE embeddings directly into Pyserini's HNSW from Python easily.
-    \end{itemize}
-    
-    \vspace{1em}
+    \textbf{Original Plan}: Use \texttt{Pyserini} \parencite{pyserini} (Lucene wrapper) for \textit{both} Sparse (BM25) and Dense (HNSW \cite{hnsw}) indexing, matching the paper exactly.
+
+    \vspace{0.5em}
+    \textbf{The Obstacle}: Pyserini's \textbf{Python API for adding custom vectors to HNSW indexes is limited/missing}. Impossible to feed BGE embeddings into Pyserini's HNSW from Python.
+
+    \vspace{0.5em}
     \textbf{The Engineering Pivot: Hybrid Pipeline}
     \begin{itemize}
         \item \textbf{Sparse Path:} Retained Pyserini for BM25 (Industry Standard).
-        \item \textbf{Dense Path:} Migrated to \textbf{Faiss} (Facebook AI Similarity Search).
-        \item \textit{Why?} Faiss offers native \textbf{GPU support} and flexible python bindings for custom embeddings, enabling a fairer comparison for RQ1 (Flat vs HNSW).
+        \item \textbf{Dense Path:} Migrated to \textbf{Faiss} \parencite{faiss} (Facebook AI Similarity Search).
     \end{itemize}
+
+    \vspace{-0.5em}
+    \begin{block}{}
+        Why Faiss? Native \textbf{GPU support} and flexible Python bindings for custom embeddings, enabling a fair Flat vs HNSW comparison (RQ1).
+    \end{block}
 \end{frame}
 
 % =============================================================
@@ -384,7 +384,7 @@
         \textit{Verdict:} \textbf{Yes.} INT8 reduces RAM by 75\% with negligible quality loss ($<1\%$ nDCG drop). It should be the default.
         
         \item[\textbf{RQ3}] \textbf{Sparse vs Dense:} 
-        \textit{Verdict:} Dense methods (BGE) generally outperform Sparse (BM25) in quality, but custom Sparse implementations (Matrix Engine) can be extremely fast on GPU.
+        \textit{Verdict:} Dense methods generally outperform Sparse (BM25) in quality, but custom Sparse implementations (Matrix Engine) can be extremely fast on GPU.
     \end{itemize}
     
     \vspace{1em}
