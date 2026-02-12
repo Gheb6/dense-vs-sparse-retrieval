@@ -46,7 +46,7 @@
 % % %
 
 % --- METADATA ---
-\title[Dense vs. Sparse Retrieval]{Reproducing ``Experimental Analysis of Dense vs.~Sparse Retrieval''}
+\title[Dense vs. Sparse Retrieval]{Reproducing ``Operational Advice for Dense and Sparse Retrievers''}
 % \subtitle{An Experimental Analysis of Dense vs. Sparse Retrieval on the BEIR Benchmark}
 \author{Gabriele Righi}
 \institute{University of Pisa}
@@ -267,60 +267,74 @@
 \end{frame}
 
 % =============================================================
-% SLIDE 8
+% SLIDE 8 (Final Split Layout: Bigger Text)
 % =============================================================
 \begin{frame}{Operational Advice: RQ1 \& RQ2}
 
-    \small \textbf{Summary: When to switch Index? When to Quantize?}
-    \vspace{0.1em}
+    \textbf{Summary: When to switch Index? When to Quantize?}
+    \vspace{0.5em}
 
-    \begin{table}
-        \centering
-        \scriptsize 
-        \setlength{\tabcolsep}{2pt} % 
-        \renewcommand{\arraystretch}{1.15} 
-        \begin{tabular}{l l c c c c l} 
-            \toprule
-            \textbf{Dataset} & \textbf{Method} & \textbf{Build} & \textbf{RAM} & \textbf{QPS} & \textbf{nDCG} & \textbf{Verdict / Trade-off} \\
-            \midrule
+    \begin{columns}[T] % T = align top
+        
+        % COLONNA SINISTRA: TABELLA (64% larghezza)
+        \begin{column}{0.64\textwidth}
+            \scriptsize 
+            \setlength{\tabcolsep}{2.5pt} 
+            \renewcommand{\arraystretch}{1.2} % Un po' più di aria tra le righe
             
-            % SCIFACT
-            \textbf{SciFact} 
-            & Flat (FP32) & \textbf{$<$0.1s} & .01 GB & \textbf{4,205} & \textbf{0.738} & \textcolor{green!60!black}{\textbf{Best Choice}} \\
-            \textit{(5k)}
-            & Flat (INT8) & $<$0.1s & .01 GB & 2,209 & 0.736 & \textcolor{red!80!black}{\textit{Slower (CPU limit)}} \\
-            \cmidrule(l){2-7}
-            
-            % QUORA
-            \textbf{Quora} 
-            & Flat (FP32) & \textbf{1s} & .38 GB & 120 & 0.889 & \textit{Too Slow} \\
-            \textit{(523k)}
-            & HNSW (FP32) & 4m & .45 GB & \textbf{361} & 0.889 & \textcolor{blue}{\textbf{Worth the wait}} \\
-            \cmidrule(l){2-7}
-            
-            % NQ
-            \textbf{NQ} 
-            & HNSW (FP32) & 19m & 2.4 GB & 9,034 & 0.464 & \textit{High RAM} \\
-            \textit{(2.6M)}
-            & HNSW (\textbf{INT8}) & 25m & \textbf{0.6 GB} & \textbf{9,100} & 0.468 & \textcolor{blue}{\textbf{-75\% RAM (Safe)}} \\
-            
-            \bottomrule
-        \end{tabular}
-    \end{table}
+            \begin{tabular}{l l c c c c} 
+                \toprule
+                \textbf{Dataset} & \textbf{Method} & \textbf{Build} & \textbf{RAM} & \textbf{QPS} & \textbf{nDCG} \\
+                \midrule
+                
+                % SCIFACT
+                \textbf{SciFact} 
+                & \textcolor{green!60!black}{\textbf{Flat (FP32)}} & \textbf{$<$0.1s} & \textbf{.01} & \textbf{4k} & \textbf{0.738} \\
+                \textit{(5k)}
+                & Flat (INT8) & $<$0.1s & .01 & 2k & 0.736 \\
+                & HNSW (FP32) & 0.6s & .01 & 1.4k & 0.738 \\
+                \midrule
+                
+                % QUORA
+                \textbf{Quora} 
+                & Flat (FP32) & 1s & .38 & 120 & 0.889 \\
+                \textit{(523k)}
+                & HNSW (FP32) & 4m & .45 & 361 & 0.889 \\
+                & \textcolor{blue}{\textbf{HNSW (INT8)}} & 4m & \textbf{.11} & \textbf{362} & \textbf{0.889} \\
+                \midrule
+                
+                % NQ
+                \textbf{NQ} 
+                & Flat (FP32) & $<$5s & 7.7 & 15 & 0.541 \\
+                \textit{(2.6M)}
+                & HNSW (FP32) & 19m & 9.6 & 8.7k & 0.465 \\
+                & \textcolor{blue}{\textbf{HNSW (INT8)}} & 25m & \textbf{2.4} & \textbf{9k} & \textbf{0.468} \\
+                
+                \bottomrule
+            \end{tabular}
+        \end{column}
 
-    \vspace{-0.5em}
+        % COLONNA DESTRA: TESTO (36% larghezza)
+        \begin{column}{0.36\textwidth}
+            \small % <--- TESTO INGRANDITO QUI
+            \textbf{Recommendations}
+            \vspace{0.6em}
+            
+            \textbf{1. Small Data (SciFact)} \\
+            Use \textcolor{green!60!black}{\textbf{Flat FP32}}. HNSW is overkill (slower QPS).
+            \vspace{0.8em}
 
-    \begin{block}{Final Recommendations}
-        \scriptsize 
-        \begin{itemize}
-            \setlength\itemsep{0.2em}
-            \item \textbf{RQ1 (Scale):} Use \textbf{Flat} for small data (<100k). Use \textbf{HNSW} for large data (>200k) as QPS scales better, with negligible nDCG drop (-0.004).
-            \item \textbf{RQ2 (Quantization):} Always use \textbf{INT8} for HNSW. It saves 75\% RAM while maintaining identical nDCG quality (0.541 vs 0.540).
-        \end{itemize}
-    \end{block}
+            \textbf{2. Medium (Quora)} \\
+            Use \textcolor{blue}{\textbf{HNSW INT8}}. Same accuracy as FP32 but \textbf{75\% less RAM}.
+            \vspace{0.8em}
+
+            \textbf{3. Large (NQ)} \\
+            Flat is too slow (15 QPS). Use \textcolor{blue}{\textbf{HNSW INT8}} for best speed/RAM balance.
+            
+        \end{column}
+    \end{columns}
 
 \end{frame}
-
 % =============================================================
 % SLIDE 9: Quality Analysis (FINAL WITH SETUP COST)
 % =============================================================
@@ -390,7 +404,7 @@
     \vspace{1em}
     
     \begin{block}{Final Recommendation}
-        For most production scenarios under 1M docs: \textbf{Use Dense Retrieval with Flat Index + INT8 Quantization.}
+        For most production scenarios under 1M docs: \textbf{Use Dense Retrieval with Flat Index.}
     \end{block}
 \end{frame}
 
