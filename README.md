@@ -80,6 +80,18 @@ pip install huggingface-hub==0.23.0 transformers==4.36.2 sentence-transformers==
 4.  **Download Results:** The final cell creates a ZIP file containing all CSVs and Plots.
 
 ---
+## 📦 Handling Large Datasets (e.g., NQ, MSMARCO)
+
+For larger datasets like **Natural Questions (NQ)** or **MSMARCO**, the end-to-end process in a single notebook can be memory-intensive. To address this, the `notebooks/` directory contains a modularized workflow:
+
+1.  **`01_embedding_generation_bge.ipynb`**: Generates and saves dense embeddings for the corpus.
+2.  **`02_index_creation_faiss.ipynb`**: Builds and saves FAISS (HNSW, Flat) indexes from the embeddings.
+3.  **`03_benchmark_dense_vs_bm25.ipynb`**: Runs benchmarks comparing dense models against BM25.
+4.  **`04_splade_custom_engine_nq.ipynb`**: Implements and benchmarks the custom SPLADE engine.
+
+This approach allows each step to be run independently, making it more manageable to process large-scale data.
+
+---
 
 ## 📂 Output Structure
 
